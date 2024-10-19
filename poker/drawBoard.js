@@ -57,6 +57,14 @@ function positionCards() {
     stackDisplay.classList.add('stackDisplay'); // Optional class for styling
     cardWrapper.appendChild(stackDisplay); // Append stack display to the wrapper
     
+    //Fix Call button
+		let callAmt = getCallAmt(0);
+		if (callAmt !== 0) {
+			document.getElementById('checkCallButton').textContent = `Call ($${callAmt})`
+		} else {
+			document.getElementById('checkCallButton').textContent = "Check"
+		}
+
     // Display player number
     let botNumberLabel = i + 1; // Assuming stackArr contains the player stacks
     const botNumberDisplay = document.createElement('div');

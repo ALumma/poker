@@ -242,9 +242,11 @@ function isFourOfAKind(spread) {
         return false;
     }
     const highCard = quadArr[0][0];
+    const kicker = 3;
     return {
         isFourOfAKind: true,
         highCard: highCard,
+        kicker: kicker,
     };
 }
 
@@ -386,6 +388,7 @@ function getHandStrength(spread) {
         return {
             tier: 2,
             highCard: fourOfAKindData.highCard,
+            kicker: fourOfAKindData.kicker,
         }
     }
     const fullHouseData = isFullHouse(spread);

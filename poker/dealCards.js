@@ -49,10 +49,12 @@ function dealCards(players) {
 }
 
 const stackArr = [];
-const foldArr = [];
+const playerStatusArr = [];
+const roundBetArr = [];
 for (let i = 0; i < playerCount; i++) {
     stackArr.push(1000);
-    foldArr.push(false);
+    playerStatusArr.push(1); //0 for folded, 1 for undecided, 2 for decided
+    roundBetArr.push(0);
 }
 const blindArr = [0, 1]; //little comma big (player indexes);
 
