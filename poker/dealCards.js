@@ -56,10 +56,13 @@ for (let i = 0; i < playerCount; i++) {
     playerStatusArr.push(1); //0 for folded, 1 for undecided, 2 for decided
     roundBetArr.push(0);
 }
-const blindArr = [0, 1]; //little comma big (player indexes);
+const blindArr = [-1, 0]; //little comma big (player indexes);
 
 let preFlopBoardData = dealCards(playerCount);
 let potAmount = 0;
+let LBAmt = 10;
+let BBAmt = 20;
+let minimumRaise = BBAmt;
 let didFlop = false, didTurn = false, didRiver = false;
 let flopData, turnData, riverData;
 let board = [];

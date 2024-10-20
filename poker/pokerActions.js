@@ -337,6 +337,7 @@ function revealBotCards(playerNumber, winnerGameData) {
 }
 
 function getWinner(gameData, singleWinningPlayerIndex = false) {
+	updateButtonStatus(false);
 	if (typeof(singleWinningPlayerIndex) == 'number') {
 		stackArr[singleWinningPlayerIndex] += potAmount;
 		document.getElementById("nextHandButton").style.display = 'block';
@@ -463,12 +464,6 @@ function nextPlayerTurn(playerIndex) {
 	}
 	setTimeout(() => {
 		console.log(`It's ${nextPlayerIndex + 1}'s turn`);
-		if (nextPlayerIndex == 1) {
-			return fold(nextPlayerIndex);
-		}
-		if (nextPlayerIndex == 2) {
-			return botRaise(nextPlayerIndex, 200);
-		}
 		return checkCall(nextPlayerIndex);
 	}, 2000);
 }
@@ -512,6 +507,9 @@ function fold(playerIndex) {
 
 function checkCall(playerIndex) {
 	let callAmt = getCallAmt(playerIndex);
+	if (stackArr[playerIndex] < callAmt) {
+		callAmt = stackArr[playerIndex];
+	}
 	stackArr[playerIndex] = stackArr[playerIndex] - callAmt;
 	potAmount += callAmt;
 	playerStatusArr[playerIndex] = 2;
@@ -526,7 +524,7 @@ function checkCall(playerIndex) {
 }
 
 function playerRaise() {
-	raiseAmt = Number(document.getElementById('raiseInput').value);
+	let raiseAmt = Number(document.getElementById('raiseInput').value);
 	let playerContribution = roundBetArr[0];
 	let maxOtherContribution = Math.max(...roundBetArr.slice(1)); // Get the max of the array excluding the first element
 	let callAmt = maxOtherContribution - playerContribution;
@@ -536,6 +534,12 @@ function playerRaise() {
 	document.getElementById('raiseInput').value = 0;
 	if ((raiseAmt + callAmt) > stackArr[0]) {
 		return alert('Insufficent funds');
+	}
+	if ((raiseAmt !== stackArr[0]) && (raiseAmt < minimumRaise)) {
+		return alert(`Raise must be at least $${minimumRaise}`)
+	}
+	if (minimumRaise < raiseAmt) {
+		minimumRaise = raiseAmt;
 	}
 	stackArr[0] = stackArr[0] - raiseAmt - callAmt;
 	potAmount += (raiseAmt + callAmt);
@@ -560,6 +564,9 @@ function botRaise(playerIndex, raiseAmt) {
 	document.getElementById('raiseInput').value = 0;
 	if ((raiseAmt + callAmt) > stackArr[playerIndex]) {
 		return false;
+	}
+	if (minimumRaise < raiseAmt) {
+		minimumRaise = raiseAmt;
 	}
 	stackArr[playerIndex] = stackArr[playerIndex] - raiseAmt - callAmt;
 	potAmount += (raiseAmt + callAmt);
@@ -607,11 +614,37 @@ function nextHand() {
 	document.getElementById("nextHandButton").style.display = "none";
 	updateButtonStatus(true);
 	preFlopBoardData = dealCards(playerCount);
+	minimumRaise = BBAmt;
 	potAmount = 0;
 	didFlop = false, didTurn = false, didRiver = false;
 	for (let i = 0; i < playerStatusArr.length; i++) {
 		playerStatusArr[i] = 1;
 	}
+	for (let i = 0; i < roundBetArr.length; i++) {
+		roundBetArr[i] = 0;
+	}
 	board = [];
+	let LBplayerIndex = blindArr[0];
+	let LBBetAmt = 0;
+	if (stackArr[LBplayerIndex] < LBAmt) {
+		LBBetAmt = stackArr[LBplayerIndex];
+	} else {
+		LBBetAmt = LBAmt;
+	}
+	stackArr[LBplayerIndex] = stackArr[LBplayerIndex] - LBBetAmt;
+	potAmount += LBBetAmt;
+	roundBetArr[LBplayerIndex] = roundBetArr[LBplayerIndex] + LBBetAmt;
+	let BBplayerIndex = blindArr[1];
+	let BBBetAmt = 0;
+	if (stackArr[BBplayerIndex] < BBAmt) {
+		BBBetAmt = stackArr[BBplayerIndex];
+	} else {
+		BBBetAmt = BBAmt;
+	}
+	stackArr[BBplayerIndex] = stackArr[BBplayerIndex] - BBBetAmt;
+	potAmount += BBBetAmt;
+	roundBetArr[BBplayerIndex] = roundBetArr[BBplayerIndex] + BBBetAmt;
 	positionCards();
+	return nextPlayerTurn(blindArr[1]);
+
 }

@@ -64,6 +64,7 @@ function positionCards() {
 		} else {
 			document.getElementById('checkCallButton').textContent = "Check"
 		}
+    document.getElementById('raiseButton').textContent = `Raise (Min $${minimumRaise})`;
 
     // Display player number
     let botNumberLabel = i + 1; // Assuming stackArr contains the player stacks
