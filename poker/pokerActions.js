@@ -397,11 +397,13 @@ function getWinner(gameData, singleWinningPlayerIndex = false) {
     const winner = tiebreak(gameData.board, winnerGameData, winnerArr);
 	if (typeof(winner) == 'object') {
 		if (winner.length > 1) {
+			let splitAmt = Math.floor(potAmount / winner.length);
 			for (let i = 0; i < winner.length; i++) {
 				revealBotCards(winner[i], winnerGameData);
+				stackArr[winner[i] - 1] += splitAmt;
 			}
 			document.getElementById("nextHandButton").style.display = 'block';
-			return alert('it be a tie lol');
+			return alert(`Players ${winner.join(', ')} split the pot!`);
 		} else {
 			revealBotCards(winner[0], winnerGameData);
 			stackArr[winner[0] - 1] += potAmount;
@@ -413,6 +415,96 @@ function getWinner(gameData, singleWinningPlayerIndex = false) {
 	stackArr[winner - 1] += potAmount;
 	document.getElementById("nextHandButton").style.display = 'block';
     return alert('Player ' + winner + ' wins with the best ' + tierObj[winnerArr[0].tier] + '!');
+}
+
+function distributeSidePots(gameData, singleWinningPlayerIndex = false) {
+	if (sidePotArr.length == 0) {
+		return;
+	}
+	updateButtonStatus(false);
+	if (typeof(singleWinningPlayerIndex) == 'number') {
+		for (let i = 0; i < sidePotArr.length; i++)  {
+			let len = sidePotArr.length - 1 - i;
+			if (sidePotArr[len].elegiblePlayers.includes(singleWinningPlayerIndex)) {
+				stackArr[singleWinningPlayerIndex] += potAmount;
+				alert('Player ' + (singleWinningPlayerIndex + 1) + ` wins a side pot of ${sidePotArr[i].amount}!`);
+			}
+		}
+		return;
+	}
+	for (let i = 0; i < sidePotArr.length; i++) {
+		const scoreData = [];
+		for (let z = 0; z < playerCount; z++) {
+			if ((playerStatusArr[z] !== 0) && (sidePotArr[i].elegiblePlayers.includes(z))) {
+				let spread = aceHighSort(quantify(gameData, z));
+				scoreData.push(getHandStrength(spread));
+				scoreData[scoreData.length - 1].playerNumber = z + 1;
+			}
+		}
+		for (let j = 0; j < scoreData.length; j++) {
+			for (let z = (j + 1); z < scoreData.length; z++) {
+				if (scoreData[j].tier < scoreData[z].tier) {
+					let jValue = scoreData[j];
+					scoreData[j] = scoreData[z];
+					scoreData[z] = jValue;
+				}
+			}
+		}
+		const winnerArr = [];
+		let len = scoreData.length - 1;
+		winnerArr.push(scoreData[len]);
+		for (let z = 1; z < scoreData.length; z++) {
+			let len = scoreData.length - 1 - z;
+			if (scoreData[len].tier == winnerArr[0].tier) {
+				winnerArr.push(scoreData[len]);
+			} else {
+				break;
+			}
+		}
+		const tierObj = {
+			1: 'Straight Flush',
+			2: 'Four of a Kind',
+			3: 'Full House',
+			4: 'Flush',
+			5: 'Straight',
+			6: 'Three of a Kind',
+			7: 'Two Pair',
+			8: 'Pair',
+			9: 'High Card',
+		}
+		const winnerGameData = {};
+		for (let z = 0; z < winnerArr.length; z++) {
+			let playerNumber = winnerArr[z].playerNumber;
+			winnerGameData[playerNumber] = gameData.hand[playerNumber - 1];
+		}
+		if (winnerArr.length == 1) {
+			let playerNumber = winnerArr[0].playerNumber;
+			revealBotCards(playerNumber, winnerGameData);
+			stackArr[playerNumber - 1] += sidePotArr[i].amount;
+			alert('Player ' + playerNumber + ` wins the side pot of ${sidePotArr[i].amount} with a ` + tierObj[winnerArr[0].tier] + '!');
+			continue;
+		}
+		const winner = tiebreak(gameData.board, winnerGameData, winnerArr);
+		if (typeof(winner) == 'object') {
+			if (winner.length > 1) {
+				let splitAmt = Math.floor(sidePotArr[i].amount / winner.length);
+				for (let z = 0; z < winner.length; z++) {
+					revealBotCards(winner[z], winnerGameData);
+					stackArr[winner[z] - 1] += splitAmt;
+				}
+				alert(`Players ${winner.join(', ')} split the side pot of $${sidePotArr[i].amount}`);
+				continue;
+			} else {
+				revealBotCards(winner[0], winnerGameData);
+				stackArr[winner[0] - 1] += sidePotArr[i].amount;
+				alert('Player ' + winner[0] + ` wins the side pot of $${sidePotArr[i].amount} with the best ` + tierObj[winnerArr[0].tier] + '!');
+				continue;
+			}
+		}
+		revealBotCards(winner, winnerGameData);
+		stackArr[winner - 1] += sidePotArr[i].amount;
+		alert('Player ' + winner + ` wins the side pot of ${sidePotArr[i].amount} with the best ` + tierObj[winnerArr[0].tier] + '!');
+	}
 }
 
 function nextDraw() {
@@ -442,6 +534,7 @@ function nextDraw() {
 			hand: hand,
 			board: board,
 		}
+		distributeSidePots(gameData);
 		getWinner(gameData);
 		document.getElementById("nextHandButton").style.display = 'block';
 	}
@@ -455,7 +548,7 @@ function nextPlayerTurn(playerIndex) {
 		if (playerStatusArr[0] == 0) { // check if The Player folded
 			return nextPlayerTurn(nextPlayerIndex);
 		}
-		console.log(`It's ${nextPlayerIndex + 1}'s turn`);
+		//console.log(`It's ${nextPlayerIndex + 1}'s turn`);
 		return updateButtonStatus(true);
 	} else {
 		if (playerStatusArr[nextPlayerIndex] == 0) { // check if the bot folded
@@ -463,9 +556,67 @@ function nextPlayerTurn(playerIndex) {
 		}
 	}
 	setTimeout(() => {
-		console.log(`It's ${nextPlayerIndex + 1}'s turn`);
+		//console.log(`It's ${nextPlayerIndex + 1}'s turn`);
+		if (nextPlayerIndex == 1) {
+			return fold(1);
+		}
 		return checkCall(nextPlayerIndex);
 	}, 2000);
+}
+
+function apportionPots() {
+	function shouldCreateSidePot() {
+		const betAmounts = [];
+		for (let i = 0; i < roundBetArr.length; i++) {
+			if ((((roundBetArr[i] !== 0) && (stackArr[i] == 0)) || (playerStatusArr[i] !== 0)) && roundBetArr[i] !== null) {
+				betAmounts.push(roundBetArr[i]);
+			}
+		}
+		// Find unique non-zero numbers
+		const uniqueBets = [...new Set(betAmounts)];
+		if (uniqueBets.length > 1) {
+			return true;
+		}
+		return false;
+	}
+	if (shouldCreateSidePot()) {
+		const betAmounts = [];
+		for (let i = 0; i < roundBetArr.length; i++) {
+			if ((((roundBetArr[i] !== 0) || (playerStatusArr[i] !== 0)) && (roundBetArr[i] !== null))) {
+				betAmounts.push(roundBetArr[i]);
+			}
+		}
+		const sortedBets = [...new Set(betAmounts)].sort((a, b) => a - b);
+		const smallestBet = sortedBets[0];
+		const secondSmallestBet = sortedBets[1];
+		const sidePotObj = {};
+		let sidePotAmt = 0;
+		let sidePotPlayerArr = [];
+		for (let i = 0; i < roundBetArr.length; i++) {
+			if ((roundBetArr[i] !== 0) && (roundBetArr[i] !== null)) {
+				roundBetArr[i] -= smallestBet;
+			}
+			if ((roundBetArr[i] == 0) && (playerStatusArr[i] !== 0)) {
+				roundBetArr[i] = null;
+			}
+		}
+		for (let i = 0; i < roundBetArr.length; i++) {
+			if ((roundBetArr[i] !== 0) && (roundBetArr[i] !== null)) {
+				potAmount = potAmount - (secondSmallestBet - smallestBet);
+				sidePotAmt += (secondSmallestBet - smallestBet);
+				if (playerStatusArr[i] !== 0) {
+					sidePotPlayerArr.push(i);
+				}
+			}
+		}
+		sidePotObj.amount = sidePotAmt;
+		sidePotObj.elegiblePlayers = sidePotPlayerArr;
+		sidePotArr.push(sidePotObj);
+		apportionPots();
+	}
+	positionCards();
+	reDrawCards();
+	return;
 }
 
 function allDecided() {
@@ -474,12 +625,13 @@ function allDecided() {
 			return false;
 		}
 	}
+	apportionPots();
 	for (let i = 0; i < playerStatusArr.length; i++) {
 		if (playerStatusArr[i] !== 0) {
 			playerStatusArr[i] = 1;
 		}
 	}
-	for (let i = 0; i < roundBetArr; i++) {
+	for (let i = 0; i < roundBetArr.length; i++) {
 		roundBetArr[i] = 0;
 	}
 	updateButtonStatus(true);
@@ -488,6 +640,12 @@ function allDecided() {
 
 function fold(playerIndex) {
 	playerStatusArr[playerIndex] = 0;
+	if (playerIndex !== 0) {
+		document.getElementsByClassName("stackDisplay")[playerIndex - 1].textContent += " * Fold";
+	}
+	for (let i = 0; i < sidePotArr.length; i++) {
+		sidePotArr[i].elegiblePlayers = sidePotArr[i].elegiblePlayers.filter(num => num !== playerIndex);
+	}
 	const nonZeroElements = playerStatusArr.filter(num => num !== 0);
 	if (nonZeroElements.length == 1) { // check if everyone else folded
 		let singleIndex = playerStatusArr.indexOf(nonZeroElements[0]);
@@ -496,6 +654,7 @@ function fold(playerIndex) {
 			hand: hand,
 			board: board,
 		}
+		distributeSidePots(gameData, singleIndex);
 		return getWinner(gameData, singleIndex);
 	}
 	if (allDecided() == true) {
@@ -508,6 +667,7 @@ function fold(playerIndex) {
 function checkCall(playerIndex) {
 	let callAmt = getCallAmt(playerIndex);
 	if (stackArr[playerIndex] < callAmt) {
+		createSidePot = true;
 		callAmt = stackArr[playerIndex];
 	}
 	stackArr[playerIndex] = stackArr[playerIndex] - callAmt;
@@ -516,6 +676,13 @@ function checkCall(playerIndex) {
 	roundBetArr[playerIndex] = roundBetArr[playerIndex] + callAmt;
 	positionCards();
 	reDrawCards();
+	if (playerIndex !== 0) {
+		if (callAmt == 0) {
+			document.getElementsByClassName("stackDisplay")[playerIndex - 1].textContent += " * Check";
+		} else {
+			document.getElementsByClassName("stackDisplay")[playerIndex - 1].textContent += " * Call";
+		}
+	}
 	if (allDecided() == true) {
 		return nextDraw();
 	} else {
@@ -579,6 +746,7 @@ function botRaise(playerIndex, raiseAmt) {
 	roundBetArr[playerIndex] = roundBetArr[playerIndex] + raiseAmt + callAmt;
 	positionCards();
 	reDrawCards();
+	document.getElementsByClassName("stackDisplay")[playerIndex - 1].textContent += ` * Raise $${raiseAmt}`;
 	if (allDecided() == true) {
 		return nextDraw();
 	} else {
@@ -591,8 +759,10 @@ function getCallAmt(playerIndex) {
 	let otherContributions = [...roundBetArr.slice(0, playerIndex), ...roundBetArr.slice(playerIndex + 1)]; // Exclude the chosen index
 	let maxOtherContribution = Math.max(...otherContributions); // Get the max from the remaining numbers
 	let callAmt = maxOtherContribution - botContribution;
-	if (callAmt < 0) {
+	if (callAmt <= 0) {
 		callAmt = 0;
+	} else if ((callAmt < BBAmt) && (maxOtherContribution < BBAmt)) {
+		callAmt = BBAmt;
 	}
 	return callAmt;
 }
@@ -607,7 +777,7 @@ function nextHand() {
 		if (stackArr[i] == 0) {
 			alert(`Player ${i + 1} has gone bankrupt, and a new player has filled their seat.`);
 			let sumStackArr = stackArr.reduce((sum, num, p) => p !== i ? sum + num : sum, 0);
-			let averageExcludingIndex = sumStackArr / (stackArr.length - 1);
+			let averageExcludingIndex = Math.floor(sumStackArr / (stackArr.length - 1));
 			stackArr[i] = averageExcludingIndex;
 		}
 	}
@@ -623,6 +793,7 @@ function nextHand() {
 	for (let i = 0; i < roundBetArr.length; i++) {
 		roundBetArr[i] = 0;
 	}
+	sidePotArr = [];
 	board = [];
 	let LBplayerIndex = blindArr[0];
 	let LBBetAmt = 0;
@@ -644,7 +815,7 @@ function nextHand() {
 	stackArr[BBplayerIndex] = stackArr[BBplayerIndex] - BBBetAmt;
 	potAmount += BBBetAmt;
 	roundBetArr[BBplayerIndex] = roundBetArr[BBplayerIndex] + BBBetAmt;
+	playerStatusArr[blindArr[1]] = 2;
 	positionCards();
 	return nextPlayerTurn(blindArr[1]);
-
 }

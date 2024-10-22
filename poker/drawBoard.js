@@ -107,6 +107,13 @@ function positionCards() {
   playerStackDisplay.textContent = '$' + stackArr[0];
   playerStackDisplay.style = 'transform: translate(0px, -70px);';
   playerStackDisplay.style.fontSize = '24px';
+
+  // Update Folded Status
+  for (let i = 1; i < playerStatusArr.length; i++) {
+    if (playerStatusArr[i] == 0) {
+      document.getElementsByClassName("stackDisplay")[i - 1].textContent += " (Folded)";
+    }
+  }
   // Update deck card
   document.getElementById('deck').style = `background-image: url('cards/card_back.svg'); transform: translate(-330px, -65px);`;
 
@@ -116,6 +123,39 @@ function positionCards() {
   const potY = containerHeight - 120;
   potDisplay.style = `transform: translate(0px, -${potY}px);`;
   potDisplay.style.fontSize = '24px';
+
+  //Update Side Pots
+  const table = document.getElementById("playerTable");
+  table.innerHTML = `
+    <tr>
+        <th>Players</th>
+        <th>Amount</th>
+    </tr>
+  `;
+
+  sidePotArr.forEach(pot => {
+      // Create a new row
+      const row = document.createElement("tr");
+
+      // Create a cell for player name
+      const nameCell = document.createElement("td");
+      const playerNumberList = [];
+      for (let i = 0; i < pot.elegiblePlayers.length; i++) {
+        playerNumberList.push(pot.elegiblePlayers[i] + 1);
+      }
+      nameCell.textContent = pot.elegiblePlayers;
+
+      // Create a cell for player amount
+      const amountCell = document.createElement("td");
+      amountCell.textContent = `$${pot.amount}`;
+
+      // Append the cells to the row
+      row.appendChild(nameCell);
+      row.appendChild(amountCell);
+
+      // Append the row to the table
+      table.appendChild(row);
+  });
 }
 
 positionCards(); // Initial positioning

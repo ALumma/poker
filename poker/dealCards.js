@@ -57,7 +57,7 @@ for (let i = 0; i < playerCount; i++) {
     roundBetArr.push(0);
 }
 const blindArr = [-1, 0]; //little comma big (player indexes);
-
+let sidePotArr = [];
 let preFlopBoardData = dealCards(playerCount);
 let potAmount = 0;
 let LBAmt = 10;

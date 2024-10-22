@@ -61,13 +61,43 @@
             left: 50%;
             transform: translateX(-50%);
         }
-
+        .table-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px; /* Small space between header and table */
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h3 {
+            margin: 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <div id="circle-container"></div>
-
+    <div class="table-container">
+        <h3>Side Pots</h3> <!-- This is the small header -->
+        <table id="playerTable">
+            <tr>
+                <th>Players</th>
+                <th>Amount</th>
+            </tr>
+        </table>
+    </div>
     <div id="player-card-container">
         <div class="playerCard" style="background-image: url('cards/card_back.svg'); transform: translate(25px, -50px);"></div>
         <div class="playerCard" style="background-image: url('cards/card_back.svg'); transform: translate(25px, -50px);"></div>
