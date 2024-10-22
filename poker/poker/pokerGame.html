@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #circle-container {
+            position: relative;
+            width: 80vw;
+            height: 80vh;
+            border-radius: 50%;
+            margin-bottom: 20px; /* Space between the circle and player card container */
+        }
+        #player-card-container {
+            display: flex;
+            justify-content: center; /* Center the cards horizontally */
+            align-items: flex-end; /* Align cards at the bottom */
+            width: 80vw; /* Match the circle container's width */
+            height: 100px; /* Fixed height for the player card container */
+        }
+        .playerCard {
+            width: 105px; /* Adjust size as needed */
+            height: 150px; /* Adjust size as needed */
+            background-size: cover;
+            background-position: center;
+            margin: 0 10px; /* Space between cards */
+        }
+        .botCard {
+            position: absolute;
+            width: 50px; /* Adjust size as needed */
+            height: 75px; /* Adjust size as needed */
+            background-size: cover;
+            background-position: center;
+        }
+        #deck {
+            position: absolute;
+            width: 105px;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            left: 50%; /* Center horizontally */
+            top: 40%;  /* Center vertically */
+            transform: translate(-45%, -50%); /* Adjust for the element's width and height */
+        }
+        #button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Space between buttons */
+            position: absolute; 
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .table-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px; /* Small space between header and table */
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h3 {
+            margin: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="circle-container"></div>
+    <div class="table-container">
+        <h3>Side Pots</h3> <!-- This is the small header -->
+        <table id="playerTable">
+            <tr>
+                <th>Players</th>
+                <th>Amount</th>
+            </tr>
+        </table>
+    </div>
+    <div id="player-card-container">
+        <div class="playerCard" style="background-image: url('cards/card_back.svg'); transform: translate(25px, -50px);"></div>
+        <div class="playerCard" style="background-image: url('cards/card_back.svg'); transform: translate(25px, -50px);"></div>
+    </div>
+
+    <div id="potDisplay"></div>
+    <div id="playerNumberDisplay"></div>
+    <div id="playerStackDisplay"></div>
+
+    <script src="pokerActions.js"></script>
+    <div id="button-container" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
+        <button id="foldButton" onclick="fold(0)">Fold</button>
+        <button id="checkCallButton" onclick="checkCall(0)">Check</button>
+
+        <input type="number" id="raiseInput" placeholder="Raise Amount">
+        <button id="raiseButton" onclick="playerRaise()">Raise</button>
+
+        <button id="nextHandButton" onclick="nextHand()" style="display: none">Next Hand</button>
+    </div>
+
+
+    <div id="deck" class="playerCard" style="background-image: url('cards/card_back.svg');"></div>
+    
+    <script src="dealCards.js"></script>
+    <script src="drawBoard.js"></script>
+    
+    <script src="drawNewCards.js"></script>
+    <script>nextHand();</script>
+
+</body>
+</html>
