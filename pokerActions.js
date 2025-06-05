@@ -868,7 +868,7 @@ function nextHand() {
 	stackArr[BBplayerIndex] = stackArr[BBplayerIndex] - BBBetAmt;
 	potAmount += BBBetAmt;
 	roundBetArr[BBplayerIndex] = roundBetArr[BBplayerIndex] + BBBetAmt;
-	playerStatusArr[blindArr[1]] = 2;
+	playerStatusArr[blindArr[1]] = 1;
 	positionCards();
 	return nextPlayerTurn(blindArr[1]);
 }
